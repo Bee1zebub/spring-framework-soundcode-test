@@ -51,12 +51,14 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	 * Returns {@code null} if {@link #getRootConfigClasses()} returns {@code null}.
 	 */
 	@Override
-	@Nullable
+	@Nullable //重写了爷爷类的 createRootApplicationContext()抽象方法
 	protected WebApplicationContext createRootApplicationContext() {
-		Class<?>[] configClasses = getRootConfigClasses();
+		// 留给子类的抽象方法
+		Class<?>[] configClasses = getRootConfigClasses(); //留给子类的抽象方法；返回一个根配置类（Spring配置类）
 		if (!ObjectUtils.isEmpty(configClasses)) {
+			// 创建IOC容器，注册配置类
 			AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-			context.register(configClasses);
+			context.register(configClasses); //
 			return context;
 		}
 		else {
@@ -69,10 +71,10 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	 * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
 	 * providing it the annotated classes returned by {@link #getServletConfigClasses()}.
 	 */
-	@Override
+	@Override // 重写了爷爷类的 createServletApplicationContext()抽象方法
 	protected WebApplicationContext createServletApplicationContext() {
 		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-		Class<?>[] configClasses = getServletConfigClasses();
+		Class<?>[] configClasses = getServletConfigClasses(); //获取 springmvc 配置
 		if (!ObjectUtils.isEmpty(configClasses)) {
 			context.register(configClasses);
 		}
@@ -85,7 +87,7 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	 * @return the configuration for the root application context, or {@code null}
 	 * if creation and registration of a root context is not desired
 	 */
-	@Nullable
+	@Nullable //留给子类的抽象方法
 	protected abstract Class<?>[] getRootConfigClasses();
 
 	/**

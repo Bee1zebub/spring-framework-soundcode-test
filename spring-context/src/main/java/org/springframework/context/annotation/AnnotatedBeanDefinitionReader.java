@@ -249,7 +249,7 @@ public class AnnotatedBeanDefinitionReader {
 	private <T> void doRegisterBean(Class<T> beanClass, @Nullable String name,
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
-
+		//把主配置类封装成BeanDefinition接口实现类对象
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
@@ -259,7 +259,7 @@ public class AnnotatedBeanDefinitionReader {
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
-
+		//完善主配置类的bean定义信息，解析@Lazy、@Primary、@DependsOn、@Role、@Description将其信息保存到主配置类的BeanDefinition的属性里
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {

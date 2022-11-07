@@ -207,7 +207,7 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 				}
 			}
 		}
-
+		// 内容协商
 		MediaType selectedMediaType = null;
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		boolean isContentTypePreset = contentType != null && contentType.isConcrete();
@@ -277,7 +277,7 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 			}
 		}
 
-		if (selectedMediaType != null) {
+		if (selectedMediaType != null) { //利用 HttpMessageConverter 直接读取输入输出流即可
 			selectedMediaType = selectedMediaType.removeQualityValue();
 			for (HttpMessageConverter<?> converter : this.messageConverters) {
 				GenericHttpMessageConverter genericConverter = (converter instanceof GenericHttpMessageConverter ?

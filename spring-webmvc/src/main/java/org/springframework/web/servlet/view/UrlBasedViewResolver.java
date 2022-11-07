@@ -464,10 +464,10 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	protected View createView(String viewName, Locale locale) throws Exception {
 		// If this resolver is not supposed to handle the given view,
 		// return null to pass on to the next resolver in the chain.
-		if (!canHandle(viewName, locale)) {
+		if (!canHandle(viewName, locale)) { //判断能否处理
 			return null;
 		}
-
+		// 如果以"redirect:" 开头则会 创建一个 RedirectView 对象
 		// Check for special "redirect:" prefix.
 		if (viewName.startsWith(REDIRECT_URL_PREFIX)) {
 			String redirectUrl = viewName.substring(REDIRECT_URL_PREFIX.length());
@@ -479,14 +479,14 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 			}
 			return applyLifecycleMethods(REDIRECT_URL_PREFIX, view);
 		}
-
+		// 如果以"forward:" 开头则会 创建一个 InternalResourceView 对象
 		// Check for special "forward:" prefix.
 		if (viewName.startsWith(FORWARD_URL_PREFIX)) {
 			String forwardUrl = viewName.substring(FORWARD_URL_PREFIX.length());
 			InternalResourceView view = new InternalResourceView(forwardUrl);
 			return applyLifecycleMethods(FORWARD_URL_PREFIX, view);
 		}
-
+		// 其他则会创建一个 InternalResourceView 对象
 		// Else fall back to superclass implementation: calling loadView.
 		return super.createView(viewName, locale);
 	}

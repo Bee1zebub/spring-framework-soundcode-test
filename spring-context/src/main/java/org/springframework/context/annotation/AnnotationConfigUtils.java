@@ -148,9 +148,9 @@ public abstract class AnnotationConfigUtils {
 	 */
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
-
+		//向AnnotatingConfigApplicationContext对象的beanFactory属性里赋DefaultListableBeanFactory对象
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
-		if (beanFactory != null) {
+		if (beanFactory != null) {//为创建的工厂准备一些基础组件（各种解析器）
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
@@ -158,15 +158,15 @@ public abstract class AnnotationConfigUtils {
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
-
+		// 向注册中心BeanDefinitionRegistry（这里指this-AnnotationConfigApplicationContext对象）中 注册 一些核心组件的定义信息
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
-
+		// 注册底层的配置文件处理器
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
-
+		// 注册底层的自动装配处理器
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
@@ -174,6 +174,7 @@ public abstract class AnnotationConfigUtils {
 		}
 
 		// Check for Jakarta Annotations support, and if present add the CommonAnnotationBeanPostProcessor.
+		// 注册支持Jakarta Annotations 的处理器，解析注解@Resource
 		if (jakartaAnnotationsPresent && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
 			def.setSource(source);
@@ -182,6 +183,7 @@ public abstract class AnnotationConfigUtils {
 
 		// Check for JSR-250 support, and if present add an InitDestroyAnnotationBeanPostProcessor
 		// for the javax variant of PostConstruct/PreDestroy.
+		// 注册支持JSR250规范的处理器,解析@PreConstruct和@PreDestroy注解
 		if (jsr250Present && !registry.containsBeanDefinition(JSR250_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			try {
 				RootBeanDefinition def = new RootBeanDefinition(InitDestroyAnnotationBeanPostProcessor.class);
@@ -195,7 +197,7 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
-		// Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
+		// Check for JPA（操作数据库） support, and if present add the PersistenceAnnotationBeanPostProcessor.
 		if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
 			try {
@@ -209,13 +211,13 @@ public abstract class AnnotationConfigUtils {
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
-
+		//注册事件功能（事件方法）的后置处理器
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_PROCESSOR_BEAN_NAME));
 		}
-
+		//注册事件功能（事件工厂）的后置处理器
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
 			def.setSource(source);
@@ -249,7 +251,7 @@ public abstract class AnnotationConfigUtils {
 	public static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd) {
 		processCommonDefinitionAnnotations(abd, abd.getMetadata());
 	}
-
+	//解读所有bean定义信息需要感知的注解
 	static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd, AnnotatedTypeMetadata metadata) {
 		AnnotationAttributes lazy = attributesFor(metadata, Lazy.class);
 		if (lazy != null) {

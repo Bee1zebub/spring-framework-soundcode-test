@@ -50,7 +50,7 @@ public class BeanNameUrlHandlerMapping extends AbstractDetectingUrlHandlerMappin
 	/**
 	 * Checks name and aliases of the given bean for URLs, starting with "/".
 	 */
-	@Override
+	@Override //决定使用哪个url处理
 	protected String[] determineUrlsForHandler(String beanName) {
 		List<String> urls = new ArrayList<>();
 		if (beanName.startsWith("/")) {

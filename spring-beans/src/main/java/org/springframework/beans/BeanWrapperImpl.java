@@ -264,13 +264,13 @@ public class BeanWrapperImpl extends AbstractNestablePropertyAccessor implements
 			ReflectionUtils.makeAccessible(readMethod);
 			return readMethod.invoke(getWrappedInstance(), (Object[]) null);
 		}
-
+		//利用setXxx()方法反射赋值
 		@Override
 		public void setValue(@Nullable Object value) throws Exception {
 			Method writeMethod = (this.pd instanceof GenericTypeAwarePropertyDescriptor typeAwarePd ?
 					typeAwarePd.getWriteMethodForActualAccess() : this.pd.getWriteMethod());
 			ReflectionUtils.makeAccessible(writeMethod);
-			writeMethod.invoke(getWrappedInstance(), value);
+			writeMethod.invoke(getWrappedInstance(), value); //使用反射为该属性赋值
 		}
 	}
 

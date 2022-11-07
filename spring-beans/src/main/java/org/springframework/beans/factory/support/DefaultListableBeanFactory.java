@@ -116,6 +116,7 @@ import org.springframework.util.StringUtils;
  * @see #resolveDependency
  */
 @SuppressWarnings("serial")
+
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory
 		implements ConfigurableListableBeanFactory, BeanDefinitionRegistry, Serializable {
 
@@ -155,10 +156,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Resolver to use for checking if a bean definition is an autowire candidate. */
 	private AutowireCandidateResolver autowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE;
 
-	/** Map from dependency type to corresponding autowired value. */
+	/** 从依赖类型映射到相应的自动装配值。Map from dependency type to corresponding autowired value. */
 	private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
-	/** Map of bean definition objects, keyed by bean name. */
+	/** 如果容器中保存了Class,Object[]/String[]的集合就不用这么麻烦Class,Object[]/String[]Map of bean definition objects, keyed by bean name. */
+	//包含多个 bean 定义的对象实现，定义由一个字符串名称唯一标识
 	private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
 
 	/** Map from bean name to merged BeanDefinitionHolder. */
@@ -168,9 +170,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	private final Map<Class<?>, String[]> allBeanNamesByType = new ConcurrentHashMap<>(64);
 
 	/** Map of singleton-only bean names, keyed by dependency type. */
+	//spring中按照类型得到组件的一个底层 池
 	private final Map<Class<?>, String[]> singletonBeanNamesByType = new ConcurrentHashMap<>(64);
 
 	/** List of bean definition names, in registration order. */
+	//保存所有BeanDefinition的名字	volatile:并发编程相关关键字
 	private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
 	/** List of names of manually registered singletons, in registration order. */
@@ -542,34 +546,34 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		return resolvedBeanNames;
 	}
-
+	// 获取类型的 Bean 名称。获取某个组件在容器中的名字,遍历了所有的bean定义信息
 	private String[] doGetBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
 		List<String> result = new ArrayList<>();
 
-		// Check all bean definitions.
+		// 检查所有 bean 定义。因为Spring没有保存<Class-bean>名字的对应信息，只能遍历所有bean名字，并拿出每个bean的BeanDefinition信息，通过isType()判断该bean是否是指定的类型Check all bean definitions.
 		for (String beanName : this.beanDefinitionNames) {
-			// Only consider bean as eligible if the bean name is not defined as alias for some other bean.
+			// 如果 bean 名称未定义为其他 bean 的别名，则仅将 bean 视为合格。Only consider bean as eligible if the bean name is not defined as alias for some other bean.
 			if (!isAlias(beanName)) {
 				try {
-					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);//获取该名称bean在容器中的定义信息
 					// Only check bean definition if it is complete.
 					if (!mbd.isAbstract() && (allowEagerInit ||
 							(mbd.hasBeanClass() || !mbd.isLazyInit() || isAllowEagerClassLoading()) &&
 									!requiresEagerInitForType(mbd.getFactoryBeanName()))) {
-						boolean isFactoryBean = isFactoryBean(beanName, mbd);
+						boolean isFactoryBean = isFactoryBean(beanName, mbd);//判断是否是FactoryBean
 						BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
 						boolean matchFound = false;
-						boolean allowFactoryBeanInit = (allowEagerInit || containsSingleton(beanName));
+						boolean allowFactoryBeanInit = (allowEagerInit || containsSingleton(beanName));//关键：containsSingleton()是否创建单实例对象
 						boolean isNonLazyDecorated = (dbd != null && !mbd.isLazyInit());
 						if (!isFactoryBean) {
 							if (includeNonSingletons || isSingleton(beanName, mbd, dbd)) {
-								matchFound = isTypeMatch(beanName, type, allowFactoryBeanInit);
+								matchFound = isTypeMatch(beanName, type, allowFactoryBeanInit);//通过该方法判断类型是否匹配
 							}
 						}
 						else {
 							if (includeNonSingletons || isNonLazyDecorated ||
 									(allowFactoryBeanInit && isSingleton(beanName, mbd, dbd))) {
-								matchFound = isTypeMatch(beanName, type, allowFactoryBeanInit);
+								matchFound = isTypeMatch(beanName, type, allowFactoryBeanInit);//factoryBean通过该方法判断类型是否匹配
 							}
 							if (!matchFound) {
 								// In case of FactoryBean, try to match FactoryBean instance itself next.
@@ -783,7 +787,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				throw new IllegalArgumentException("Value [" + autowiredValue +
 						"] does not implement specified dependency type [" + dependencyType.getName() + "]");
 			}
-			this.resolvableDependencies.put(dependencyType, autowiredValue);
+			this.resolvableDependencies.put(dependencyType, autowiredValue);//放入属性resolvableDependencies中，即可自动注入这些底层组件
 		}
 	}
 
@@ -918,21 +922,24 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
 
 		// Trigger initialization of all non-lazy singleton beans...
+		// 触发 所有 非惰性单例 bean 的初始化...
 		for (String beanName : beanNames) {
-			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
-			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
-				if (isFactoryBean(beanName)) {
+			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);//开始解析文件时被封装的BeanDefinition
+			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) { //bean的属性abstract和parent一起使用，与父子容器有关
+				if (isFactoryBean(beanName)) { //判断是否是工厂bean
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
+					//判断是否继承SmartFactoryBean，且isEagerInit()为true：标识提前加载
 					if (bean instanceof SmartFactoryBean<?> smartFactoryBean && smartFactoryBean.isEagerInit()) {
 						getBean(beanName);
 					}
 				}
-				else {
-					getBean(beanName);
+				else { //不是FactoryBean（工厂bean）执行这个分支，普通的单实例非懒加载bean
+					getBean(beanName); //for循环
 				}
 			}
 		}
-
+		// 上面创建完所有的bean实例
+		// 为所有适用的 bean 触发初始化后回调...
 		// Trigger post-initialization callback for all applicable beans...
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
@@ -954,7 +961,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
 
-		Assert.hasText(beanName, "Bean name must not be empty");
+			Assert.hasText(beanName, "Bean name must not be empty");
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 
 		if (beanDefinition instanceof AbstractBeanDefinition abd) {
@@ -967,6 +974,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		//没有则注册进档案馆里
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
 			if (!isAllowBeanDefinitionOverriding()) {
@@ -1025,6 +1033,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					removeManualSingletonName(beanName);
 				}
 			}
+			//如果当前Bean有别名则注册别名
 			else {
 				// Still in startup registration phase
 				this.beanDefinitionMap.put(beanName, beanDefinition);
@@ -1038,7 +1047,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			resetBeanDefinition(beanName);
 		}
 		else if (isConfigurationFrozen()) {
-			clearByTypeCache();
+			clearByTypeCache()
+			;
 		}
 	}
 
@@ -1211,6 +1221,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			ResolvableType requiredType, @Nullable Object[] args, boolean nonUniqueAsNull) throws BeansException {
 
 		Assert.notNull(requiredType, "Required type must not be null");
+		//获取Hello对象对应的helloFactory工厂bean
 		String[] candidateNames = getBeanNamesForType(requiredType);
 
 		if (candidateNames.length > 1) {
@@ -1264,7 +1275,6 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@Nullable
 	private <T> NamedBeanHolder<T> resolveNamedBean(
 			String beanName, ResolvableType requiredType, @Nullable Object[] args) throws BeansException {
-
 		Object bean = getBean(beanName, null, args);
 		if (bean instanceof NullBean) {
 			return null;

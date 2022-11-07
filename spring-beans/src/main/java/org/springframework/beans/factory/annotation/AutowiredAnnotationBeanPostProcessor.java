@@ -159,7 +159,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		MergedBeanDefinitionPostProcessor, BeanRegistrationAotProcessor, PriorityOrdered, BeanFactoryAware {
 
 	protected final Log logger = LogFactory.getLog(getClass());
-
+	//autowiredAnnotationTypes初始化是赋值 Autowired.class 和 Value.class（注解也是.class文件）
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
 
 	private String requiredParameterName = "required";
@@ -480,6 +480,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+		//找到自动装配的原信息，找自动装配的元数据
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
 			metadata.inject(bean, beanName, pvs);
@@ -527,7 +528,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 				if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 					if (metadata != null) {
 						metadata.clear(pvs);
-					}
+					}//如果缓存中没有元信息，则构建元信息，分析当前bean属性或方法是否有标注@Autowired等自动赋值的注解
 					metadata = buildAutowiringMetadata(clazz);
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
@@ -546,7 +547,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
-
+			//找该bean对象所有属性中标注了 @Autowired 等自动装配的注解
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				MergedAnnotation<?> ann = findAutowiredAnnotation(field);
 				if (ann != null) {
@@ -560,7 +561,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 					currElements.add(new AutowiredFieldElement(field, required));
 				}
 			});
-
+			//找该bean对象所有方法中标注了 @Autowire 等自动装配的注解
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
@@ -585,7 +586,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 					currElements.add(new AutowiredMethodElement(method, required, pd));
 				}
 			});
-
+			//InjectedElement elements 添加
 			elements.addAll(0, currElements);
 			targetClass = targetClass.getSuperclass();
 		}

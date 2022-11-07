@@ -64,7 +64,7 @@ public abstract class AbstractHandlerMethodAdapter extends WebContentGenerator i
 	 * @param handler the handler instance to check
 	 * @return whether this adapter can adapt the given handler
 	 */
-	@Override
+	@Override//判断该处理器是不是一个HandlerMethod类型方法
 	public final boolean supports(Object handler) {
 		return (handler instanceof HandlerMethod && supportsInternal((HandlerMethod) handler));
 	}
@@ -83,7 +83,7 @@ public abstract class AbstractHandlerMethodAdapter extends WebContentGenerator i
 	@Nullable
 	public final ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-
+		// 留给子类的模板方法
 		return handleInternal(request, response, (HandlerMethod) handler);
 	}
 

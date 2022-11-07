@@ -81,7 +81,7 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		if (advice instanceof MethodInterceptor) {
 			interceptors.add((MethodInterceptor) advice);
 		}
-		for (AdvisorAdapter adapter : this.adapters) {
+		for (AdvisorAdapter adapter : this.adapters) { // 有增强器适配器（保存哪些方法是通知方法的详细信息）将增强器转为拦截器（反射执行通知方法）
 			if (adapter.supportsAdvice(advice)) {
 				interceptors.add(adapter.getInterceptor(advisor));
 			}

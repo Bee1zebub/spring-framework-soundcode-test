@@ -182,11 +182,13 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @param handler the handler
 	 * @param method the method
 	 */
+	//哪个请求有哪个方法处理会通过这里进行注册进入mappingRegistry
+	//分析所有的Controller处理器，里面的@RequestMapping 注解才能知道
 	public void registerMapping(T mapping, Object handler, Method method) {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Register \"" + mapping + "\" to " + method.toGenericString());
 		}
-		this.mappingRegistry.register(mapping, handler, method);
+		this.mappingRegistry.register(mapping, handler, method);//注册
 	}
 
 	/**
@@ -210,7 +212,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		initHandlerMethods();
+		initHandlerMethods(); //初始化handle方法
 	}
 
 	/**
@@ -222,7 +224,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected void initHandlerMethods() {
 		for (String beanName : getCandidateBeanNames()) {
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
-				processCandidateBean(beanName);
+				processCandidateBean(beanName);//获取所有子容器组件beanName，挨个判断是否有@Controller注解
 			}
 		}
 		handlerMethodsInitialized(getHandlerMethods());
@@ -261,9 +263,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			if (logger.isTraceEnabled()) {
 				logger.trace("Could not resolve type for bean '" + beanName + "'", ex);
 			}
-		}
+		}// isHandler()会判断该beanType是否有 @Controller 注解
 		if (beanType != null && isHandler(beanType)) {
-			detectHandlerMethods(beanName);
+			detectHandlerMethods(beanName);//分析当前bean的HandlerMethod
 		}
 	}
 
@@ -278,10 +280,11 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 		if (handlerType != null) {
 			Class<?> userType = ClassUtils.getUserClass(handlerType);
+			//拿到该控制器的所有方法
 			Map<Method, T> methods = MethodIntrospector.selectMethods(userType,
-					(MethodIntrospector.MetadataLookup<T>) method -> {
+					(MethodIntrospector.MetadataLookup<T>) method -> {//使用Lambda表达式传回 MetadataLookup 匿名内部类
 						try {
-							return getMappingForMethod(method, userType);
+							return getMappingForMethod(method, userType); //这个 MetadataLookup 回调的方法，探索当前类中所有的满足方法
 						}
 						catch (Throwable ex) {
 							throw new IllegalStateException("Invalid mapping on handler class [" +
@@ -296,7 +299,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			}
 			methods.forEach((method, mapping) -> {
 				Method invocableMethod = AopUtils.selectInvocableMethod(method, userType);
-				registerHandlerMethod(handler, invocableMethod, mapping);
+				registerHandlerMethod(handler, invocableMethod, mapping); //传递参数注册 handle方法和请求地址的映射
 			});
 		}
 	}
@@ -329,7 +332,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * under the same mapping
 	 */
 	protected void registerHandlerMethod(Object handler, Method method, T mapping) {
-		this.mappingRegistry.register(mapping, handler, method);
+		this.mappingRegistry.register(mapping, handler, method); //注册保存映射信息
 	}
 
 	/**
@@ -379,7 +382,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
 		String lookupPath = initLookupPath(request);
 		this.mappingRegistry.acquireReadLock();
-		try {
+		try {//寻找当前请求谁能处理
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
 		}

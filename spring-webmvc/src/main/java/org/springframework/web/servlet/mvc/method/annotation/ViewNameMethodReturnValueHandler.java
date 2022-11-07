@@ -77,11 +77,11 @@ public class ViewNameMethodReturnValueHandler implements HandlerMethodReturnValu
 	@Override
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {
-
+		// 如果是字符串，则跳到该页面
 		if (returnValue instanceof CharSequence) {
 			String viewName = returnValue.toString();
-			mavContainer.setViewName(viewName);
-			if (isRedirectViewName(viewName)) {
+			mavContainer.setViewName(viewName);//保存视图名
+			if (isRedirectViewName(viewName)) { // 是否是重定向的方式，即使用"redirect:"
 				mavContainer.setRedirectModelScenario(true);
 			}
 		}

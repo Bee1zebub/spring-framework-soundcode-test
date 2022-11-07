@@ -201,7 +201,7 @@ class ConfigurationClassParser {
 	protected final void parse(Class<?> clazz, String beanName) throws IOException {
 		processConfigurationClass(new ConfigurationClass(clazz, beanName), DEFAULT_EXCLUSION_FILTER);
 	}
-
+	//解析配置类
 	protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
 		processConfigurationClass(new ConfigurationClass(metadata, beanName), DEFAULT_EXCLUSION_FILTER);
 	}
@@ -225,7 +225,7 @@ class ConfigurationClassParser {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
 		}
-
+		//Spring底层大量使用缓存
 		ConfigurationClass existingClass = this.configurationClasses.get(configClass);
 		if (existingClass != null) {
 			if (configClass.isImported()) {
@@ -245,11 +245,11 @@ class ConfigurationClassParser {
 
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass, filter);
-		do {
+		do {//解析配置类里的全部注解
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass, filter);
 		}
 		while (sourceClass != null);
-
+		//只要该配置类解析过，则放在解析好的集合中。
 		this.configurationClasses.put(configClass, configClass);
 	}
 
@@ -265,7 +265,7 @@ class ConfigurationClassParser {
 	protected final SourceClass doProcessConfigurationClass(
 			ConfigurationClass configClass, SourceClass sourceClass, Predicate<String> filter)
 			throws IOException {
-
+		//@Component的元信息
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			// Recursively process any member (nested) classes first
 			processMemberClasses(configClass, sourceClass, filter);
@@ -290,7 +290,7 @@ class ConfigurationClassParser {
 		if (!componentScans.isEmpty() &&
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
-				// The config class is annotated with @ComponentScan -> perform the scan immediately
+				// 使用Scanner把ComponentScan包下所有组件进行扫描保存。The config class is annotated with @ComponentScan -> perform the scan immediately
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed

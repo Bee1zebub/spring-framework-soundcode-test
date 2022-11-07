@@ -74,29 +74,29 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 		Assert.notNull(aspectJAdvisorFactory, "AspectJAdvisorFactory must not be null");
 		this.aspectJAdvisorFactory = aspectJAdvisorFactory;
 	}
-
+	// 第一步：BeanFactoryAware来的。当前后置处理器初始化创建对象是回调该方法
 	@Override
 	protected void initBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		super.initBeanFactory(beanFactory);
 		if (this.aspectJAdvisorFactory == null) {
-			this.aspectJAdvisorFactory = new ReflectiveAspectJAdvisorFactory(beanFactory);
+			this.aspectJAdvisorFactory = new ReflectiveAspectJAdvisorFactory(beanFactory);//准备一个 ReflectiveAspectJAdvisorFactory对象 ：创建增强器
 		}
 		this.aspectJAdvisorsBuilder =
-				new BeanFactoryAspectJAdvisorsBuilderAdapter(beanFactory, this.aspectJAdvisorFactory);
+				new BeanFactoryAspectJAdvisorsBuilderAdapter(beanFactory, this.aspectJAdvisorFactory);//建造者模式
 	}
 
 
 	@Override
-	protected List<Advisor> findCandidateAdvisors() {
+	protected List<Advisor> findCandidateAdvisors() {//找到候选的增强器
 		// Add all the Spring advisors found according to superclass rules.
 		List<Advisor> advisors = super.findCandidateAdvisors();
 		// Build Advisors for all AspectJ aspects in the bean factory.
-		if (this.aspectJAdvisorsBuilder != null) {
-			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
+		if (this.aspectJAdvisorsBuilder != null) { //判断当前类是否需要增强，则找到他之前保存的增强器
+			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());//利用建造者构建增强器
 		}
 		return advisors;
 	}
-
+	// 第二步：
 	@Override
 	protected boolean isInfrastructureClass(Class<?> beanClass) {
 		// Previously we setProxyTargetClass(true) in the constructor, but that has too

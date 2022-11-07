@@ -106,7 +106,7 @@ public class InternalResourceViewResolver extends UrlBasedViewResolver {
 
 	@Override
 	protected AbstractUrlBasedView buildView(String viewName) throws Exception {
-		InternalResourceView view = (InternalResourceView) super.buildView(viewName);
+		InternalResourceView view = (InternalResourceView) super.buildView(viewName);//其他则创建 InternalResourceView 对象
 		if (this.alwaysInclude != null) {
 			view.setAlwaysInclude(this.alwaysInclude);
 		}

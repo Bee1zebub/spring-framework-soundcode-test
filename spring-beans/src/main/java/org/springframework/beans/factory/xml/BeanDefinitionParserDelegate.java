@@ -434,7 +434,7 @@ public class BeanDefinitionParserDelegate {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
-		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
+		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);//解析
 		if (beanDefinition != null) {
 			if (!StringUtils.hasText(beanName)) {
 				try {
@@ -512,7 +512,7 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		try {
-			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
+			AbstractBeanDefinition bd = createBeanDefinition(className, parent);//创建BeanDefinition
 
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));

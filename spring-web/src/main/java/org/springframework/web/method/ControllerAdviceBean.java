@@ -294,6 +294,7 @@ public class ControllerAdviceBean implements Ordered {
 			beanFactory = cac.getBeanFactory();
 		}
 		List<ControllerAdviceBean> adviceBeans = new ArrayList<>();
+		// 包含
 		for (String name : BeanFactoryUtils.beanNamesForTypeIncludingAncestors(beanFactory, Object.class)) {
 			if (!ScopedProxyUtils.isScopedTarget(name)) {
 				ControllerAdvice controllerAdvice = beanFactory.findAnnotationOnBean(name, ControllerAdvice.class);

@@ -566,11 +566,11 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	@Override
 	public void afterPropertiesSet() {
 		// Do this first, it may add ResponseBody advice beans
-		initControllerAdviceCache();
+ 		initControllerAdviceCache(); //初始化 ControllerAdvice【与异常处理相关的功能】
 
 		if (this.argumentResolvers == null) {
-			List<HandlerMethodArgumentResolver> resolvers = getDefaultArgumentResolvers();
-			this.argumentResolvers = new HandlerMethodArgumentResolverComposite().addResolvers(resolvers);
+			List<HandlerMethodArgumentResolver> resolvers = getDefaultArgumentResolvers();//拿到底层所有的argumentResolvers
+			this.argumentResolvers = new HandlerMethodArgumentResolverComposite().addResolvers(resolvers); //把这些argumentResolvers统一组合到一个对象里面，方便管控
 		}
 		if (this.initBinderArgumentResolvers == null) {
 			List<HandlerMethodArgumentResolver> resolvers = getDefaultInitBinderArgumentResolvers();
@@ -789,12 +789,14 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		ModelAndView mav;
 		checkRequest(request);
 
+		// 会话锁，每个用户和服务器交互无论发了多少请求都只有一个会话，限制用户的线程
+		// 我们没设置
 		// Execute invokeHandlerMethod in synchronized block if required.
 		if (this.synchronizeOnSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
 				Object mutex = WebUtils.getSessionMutex(session);
-				synchronized (mutex) {
+				synchronized (mutex) {//高并发可以限制一个用户一次只进来一个请求
 					mav = invokeHandlerMethod(request, response, handlerMethod);
 				}
 			}
@@ -803,7 +805,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				mav = invokeHandlerMethod(request, response, handlerMethod);
 			}
 		}
-		else {
+		else {//执行目标方法
 			// No synchronization on session demanded at all...
 			mav = invokeHandlerMethod(request, response, handlerMethod);
 		}
@@ -851,27 +853,31 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	@Nullable
 	protected ModelAndView invokeHandlerMethod(HttpServletRequest request,
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
-
+		// 把原生的request和response封装到一个对象中方便后续操作【装饰器模式】
 		ServletWebRequest webRequest = new ServletWebRequest(request, response);
 		try {
+			//数据绑定器，请求数据到自定义Object的映射
 			WebDataBinderFactory binderFactory = getDataBinderFactory(handlerMethod);
-			ModelFactory modelFactory = getModelFactory(handlerMethod, binderFactory);
+			ModelFactory modelFactory = getModelFactory(handlerMethod, binderFactory);//获取模型工厂Model（交给页面的数据）View（我们要去的视图）
 
+			//封装handlerMethod变为ServletInvocableHandlerMethod，提供对handlerMethod里面信息的快速获取
 			ServletInvocableHandlerMethod invocableMethod = createInvocableHandlerMethod(handlerMethod);
-			if (this.argumentResolvers != null) {
-				invocableMethod.setHandlerMethodArgumentResolvers(this.argumentResolvers);
+			if (this.argumentResolvers != null) { // ！参数解析器
+				invocableMethod.setHandlerMethodArgumentResolvers(this.argumentResolvers); //向 ServletInvocableHandlerMethod 添加参数解析器
 			}
-			if (this.returnValueHandlers != null) {
-				invocableMethod.setHandlerMethodReturnValueHandlers(this.returnValueHandlers);
+			if (this.returnValueHandlers != null) { //！返回值解析器
+				invocableMethod.setHandlerMethodReturnValueHandlers(this.returnValueHandlers);//向 ServletInvocableHandlerMethod 添加返回值处理器
 			}
 			invocableMethod.setDataBinderFactory(binderFactory);
 			invocableMethod.setParameterNameDiscoverer(this.parameterNameDiscoverer);
 
+			//以上的几个核心组件都挺重要的 //ModelAndViewContainer以后流程共享ModelAndView数据的临时存储容器
 			ModelAndViewContainer mavContainer = new ModelAndViewContainer();
-			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request));
+			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request)); //向 defaultModel 添加数据
 			modelFactory.initModel(webRequest, mavContainer, invocableMethod);
 			mavContainer.setIgnoreDefaultModelOnRedirect(this.ignoreDefaultModelOnRedirect);
 
+			//下面与异步请求有关
 			AsyncWebRequest asyncWebRequest = WebAsyncUtils.createAsyncWebRequest(request, response);
 			asyncWebRequest.setTimeout(this.asyncRequestTimeout);
 
@@ -880,7 +886,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			asyncManager.setAsyncWebRequest(asyncWebRequest);
 			asyncManager.registerCallableInterceptors(this.callableInterceptors);
 			asyncManager.registerDeferredResultInterceptors(this.deferredResultInterceptors);
-
+			//同步则跳过
 			if (asyncManager.hasConcurrentResult()) {
 				Object result = asyncManager.getConcurrentResult();
 				mavContainer = (ModelAndViewContainer) asyncManager.getConcurrentResultContext()[0];
@@ -892,11 +898,14 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
 
+			//上面封装webRequest ServletInvocableHandlerMethod 和 ModelAndViewContainer 对象
+			//将要执行目标方法，执行期间的数据存在 mavContainer中
 			invocableMethod.invokeAndHandle(webRequest, mavContainer);
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;
 			}
 
+			// 提取出 mavContainer 的数据准备返回，解析来处理 ModelAndView 去view指定的页面中展示出model中的数据
 			return getModelAndView(mavContainer, modelFactory, webRequest);
 		}
 		finally {
@@ -1001,19 +1010,19 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	private ModelAndView getModelAndView(ModelAndViewContainer mavContainer,
 			ModelFactory modelFactory, NativeWebRequest webRequest) throws Exception {
 
-		modelFactory.updateModel(webRequest, mavContainer);
+		modelFactory.updateModel(webRequest, mavContainer);//有兴趣就看看
 		if (mavContainer.isRequestHandled()) {
 			return null;
 		}
-		ModelMap model = mavContainer.getModel();
+		ModelMap model = mavContainer.getModel(); //返回给页面数据
 		ModelAndView mav = new ModelAndView(mavContainer.getViewName(), model, mavContainer.getStatus());
 		if (!mavContainer.isViewReference()) {
 			mav.setView((View) mavContainer.getView());
-		}
+		}//处理重定向数据
 		if (model instanceof RedirectAttributes redirectAttributes) {
 			Map<String, ?> flashAttributes = redirectAttributes.getFlashAttributes();
 			HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-			if (request != null) {
+			if (request != null) { //重定向数据的共享
 				RequestContextUtils.getOutputFlashMap(request).putAll(flashAttributes);
 			}
 		}

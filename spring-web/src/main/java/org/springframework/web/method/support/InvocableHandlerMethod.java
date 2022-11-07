@@ -143,11 +143,12 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		// 获取方法的请求参数,调用参数解析器
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Arguments: " + Arrays.toString(args));
 		}
-		return doInvoke(args);
+		return doInvoke(args); //反射执行
 	}
 
 	/**
@@ -158,12 +159,12 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	 */
 	protected Object[] getMethodArgumentValues(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
-
+		// 拿到方法的所有的参数
 		MethodParameter[] parameters = getMethodParameters();
 		if (ObjectUtils.isEmpty(parameters)) {
 			return EMPTY_ARGS;
 		}
-
+		// 准备一个args数组（和parameters一样长），挨个确定每个参数的值
 		Object[] args = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			MethodParameter parameter = parameters[i];
@@ -172,7 +173,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 			if (args[i] != null) {
 				continue;
 			}
-			if (!this.resolvers.supportsParameter(parameter)) {
+			if (!this.resolvers.supportsParameter(parameter)) { //supportsParameter() 把所有支持这种参数的解析器放到缓存中,方便下次使用缓存
 				throw new IllegalStateException(formatArgumentError(parameter, "No suitable resolver"));
 			}
 			try {

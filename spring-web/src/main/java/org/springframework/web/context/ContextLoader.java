@@ -257,7 +257,7 @@ public class ContextLoader {
 	 * @see #CONFIG_LOCATION_PARAM
 	 */
 	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
-		if (servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE) != null) {
+ 		if (servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE) != null) {
 			throw new IllegalStateException(
 					"Cannot initialize context because there is already a root application context present - " +
 					"check whether you have multiple ContextLoader* definitions in your web.xml!");
@@ -285,7 +285,7 @@ public class ContextLoader {
 					ApplicationContext parent = loadParentContext(servletContext);
 					cwac.setParent(parent);
 				}
-				configureAndRefreshWebApplicationContext(cwac, servletContext);
+				configureAndRefreshWebApplicationContext(cwac, servletContext);// 配置刷新容器
 			}
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
@@ -393,7 +393,7 @@ public class ContextLoader {
 		}
 
 		customizeContext(sc, wac);
-		wac.refresh();
+		wac.refresh(); //刷新
 	}
 
 	/**

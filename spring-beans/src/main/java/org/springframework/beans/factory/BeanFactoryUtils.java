@@ -57,6 +57,7 @@ public abstract class BeanFactoryUtils {
 	 * @since 5.1
 	 * @see BeanFactory#FACTORY_BEAN_PREFIX
 	 */
+	//从带有工厂 bean 前缀的名称缓存到没有取消引用的剥离名称
 	private static final Map<String, String> transformedBeanNameCache = new ConcurrentHashMap<>();
 
 
@@ -222,11 +223,11 @@ public abstract class BeanFactoryUtils {
 	 */
 	public static String[] beanNamesForTypeIncludingAncestors(ListableBeanFactory lbf, Class<?> type) {
 		Assert.notNull(lbf, "ListableBeanFactory must not be null");
-		String[] result = lbf.getBeanNamesForType(type);
+		String[] result = lbf.getBeanNamesForType(type); //先调用当前容器
 		if (lbf instanceof HierarchicalBeanFactory hbf) {
 			if (hbf.getParentBeanFactory() instanceof ListableBeanFactory pbf) {
-				String[] parentResult = beanNamesForTypeIncludingAncestors(pbf, type);
-				result = mergeNamesWithParent(result, parentResult, hbf);
+				String[] parentResult = beanNamesForTypeIncludingAncestors(pbf, type); //再在父容器中找组件
+				result = mergeNamesWithParent(result, parentResult, hbf); // 合并数组
 			}
 		}
 		return result;

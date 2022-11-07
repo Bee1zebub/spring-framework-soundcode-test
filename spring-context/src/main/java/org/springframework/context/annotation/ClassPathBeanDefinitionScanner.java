@@ -273,7 +273,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
-			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);//找到候选组件【需要扫描的组件】
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
@@ -281,7 +281,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				if (candidate instanceof AbstractBeanDefinition) {
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
-				if (candidate instanceof AnnotatedBeanDefinition) {
+				if (candidate instanceof AnnotatedBeanDefinition) {//解读所有bean定义信息需要感知的注解
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
 				if (checkCandidate(beanName, candidate)) {

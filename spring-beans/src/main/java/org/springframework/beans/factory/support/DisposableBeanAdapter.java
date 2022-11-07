@@ -95,6 +95,7 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 	 * @param postProcessors the List of BeanPostProcessors
 	 * (potentially DestructionAwareBeanPostProcessor), if any
 	 */
+	//bean销毁的后置处理器
 	public DisposableBeanAdapter(Object bean, String beanName, RootBeanDefinition beanDefinition,
 			List<DestructionAwareBeanPostProcessor> postProcessors) {
 

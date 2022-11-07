@@ -203,7 +203,7 @@ public abstract class BeanUtils {
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
-				return ctor.newInstance(argsWithDefaultValues);
+				return ctor.newInstance(argsWithDefaultValues); //使用构造器对象实际创建bean对象
 			}
 		}
 		catch (InstantiationException ex) {

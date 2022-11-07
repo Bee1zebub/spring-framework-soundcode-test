@@ -302,7 +302,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
-		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
+		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);//解析每一个Element对象
 		if (bdHolder != null) {
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
@@ -313,7 +313,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				getReaderContext().error("Failed to register bean definition with name '" +
 						bdHolder.getBeanName() + "'", ele, ex);
 			}
-			// Send registration event.
+			// Send registration event.//发送一个通知事件
 			getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
 		}
 	}

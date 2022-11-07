@@ -61,7 +61,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		super.onStartup(servletContext);
-		registerDispatcherServlet(servletContext);
+		registerDispatcherServlet(servletContext); // 注册 DispatcherServlet
 	}
 
 	/**
@@ -79,13 +79,14 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		// 创建servlet容器
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
-
+		// 该 DispatcherServlet 对象依赖 createServletApplicationContext() 创建的 WebApplicationContext 对象
 		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
-
+		//之前的方法
 		ServletRegistration.Dynamic registration = servletContext.addServlet(servletName, dispatcherServlet);
 		if (registration == null) {
 			throw new IllegalStateException("Failed to register servlet with name '" + servletName + "'. " +
@@ -93,7 +94,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		}
 
 		registration.setLoadOnStartup(1);
-		registration.addMapping(getServletMappings());
+		registration.addMapping(getServletMappings()); //根据我们指定的 DispatcherServlet
 		registration.setAsyncSupported(isAsyncSupported());
 
 		Filter[] filters = getServletFilters();
@@ -103,7 +104,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 			}
 		}
 
-		customizeRegistration(registration);
+		customizeRegistration(registration); // 子类模板方法
 	}
 
 	/**

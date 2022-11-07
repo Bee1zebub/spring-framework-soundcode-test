@@ -383,7 +383,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	protected void initApplicationContext() throws BeansException {
 		extendInterceptors(this.interceptors);
-		detectMappedInterceptors(this.adaptedInterceptors);
+		detectMappedInterceptors(this.adaptedInterceptors); //从系统中拿拦截器的方式
 		initInterceptors();
 	}
 
@@ -408,7 +408,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * ancestors. Subclasses can override and refine this policy.
 	 * @param mappedInterceptors an empty list to add to
 	 */
-	protected void detectMappedInterceptors(List<HandlerInterceptor> mappedInterceptors) {
+	protected void detectMappedInterceptors(List<HandlerInterceptor> mappedInterceptors) { //直接从容器中获取拦截器
 		mappedInterceptors.addAll(BeanFactoryUtils.beansOfTypeIncludingAncestors(
 				obtainApplicationContext(), MappedInterceptor.class, true, false).values());
 	}
@@ -501,8 +501,8 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
-		Object handler = getHandlerInternal(request);
-		if (handler == null) {
+		Object handler = getHandlerInternal(request); //从HandleMapping 的 registry中找映射
+		if (handler == null) {//handler为真正处理请求的Method
 			handler = getDefaultHandler();
 		}
 		if (handler == null) {
@@ -517,7 +517,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 		if (!ServletRequestPathUtils.hasCachedPath(request)) {
 			initLookupPath(request);
 		}
-
+		//找到前面处理映射的目标方法以后，还要创建一个Handle的处理链
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
 
 		if (logger.isTraceEnabled()) {
@@ -616,7 +616,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
 		HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain handlerExecutionChain ?
 				handlerExecutionChain : new HandlerExecutionChain(handler));
-
+		//把所有的拦截器拿过来加入handle处理链中
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
 			if (interceptor instanceof MappedInterceptor mappedInterceptor) {
 				if (mappedInterceptor.matches(request)) {
@@ -624,7 +624,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 				}
 			}
 			else {
-				chain.addInterceptor(interceptor);
+				chain.addInterceptor(interceptor);//向handler处理链(HandlerExecutionChain) 中添加拦截器
 			}
 		}
 		return chain;

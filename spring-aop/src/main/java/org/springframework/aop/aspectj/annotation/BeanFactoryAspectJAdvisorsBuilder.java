@@ -81,7 +81,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> buildAspectJAdvisors() {
-		List<String> aspectNames = this.aspectBeanNames;
+ 		List<String> aspectNames = this.aspectBeanNames;
 
 		if (aspectNames == null) {
 			synchronized (this) {
@@ -89,10 +89,10 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
-					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
+					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors( //获取所有的bean组件的名字
 							this.beanFactory, Object.class, true, false);
 					for (String beanName : beanNames) {
-						if (!isEligibleBean(beanName)) {
+						if (!isEligibleBean(beanName)) { //检查是否是有资格的bean
 							continue;
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
@@ -100,19 +100,19 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						Class<?> beanType = this.beanFactory.getType(beanName, false);
 						if (beanType == null) {
 							continue;
-						}
+						}//判断每一个组件是否是切面
 						if (this.advisorFactory.isAspect(beanType)) {
 							aspectNames.add(beanName);
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory); //利用增强器工厂找该切面的增强器（通知方法）
 								if (this.beanFactory.isSingleton(beanName)) {
-									this.advisorsCache.put(beanName, classAdvisors);
+									this.advisorsCache.put(beanName, classAdvisors);//将切面及其中的增强器放入advisorsCache中
 								}
 								else {
-									this.aspectFactoryCache.put(beanName, factory);
+									this.aspectFactoryCache.put(beanName, factory); //否则放入aspectFactoryCache
 								}
 								advisors.addAll(classAdvisors);
 							}
@@ -139,14 +139,14 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 			return Collections.emptyList();
 		}
 		List<Advisor> advisors = new ArrayList<>();
-		for (String aspectName : aspectNames) {
-			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
+		for (String aspectName : aspectNames) { //遍历所有的切面找增强器
+			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName); //第二次拦截注解从缓存中获取
 			if (cachedAdvisors != null) {
 				advisors.addAll(cachedAdvisors);
 			}
 			else {
 				MetadataAwareAspectInstanceFactory factory = this.aspectFactoryCache.get(aspectName);
-				advisors.addAll(this.advisorFactory.getAdvisors(factory));
+				advisors.addAll(this.advisorFactory.getAdvisors(factory)); //获取增强器
 			}
 		}
 		return advisors;

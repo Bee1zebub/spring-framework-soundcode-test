@@ -240,11 +240,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected <T> T doGetBean(
 			String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
 			throws BeansException {
-
+		//将"&xxxFactory"转换成"xxxFactory",去掉"&"
 		String beanName = transformedBeanName(name);
 		Object beanInstance;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		//急切地检查单例缓存以获取手动注册的单例。检查单例缓存中是否存有该bean
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
@@ -255,18 +256,19 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				else {
 					logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
 				}
-			}
+			}//获取工厂bean对应的实例对象
 			beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
+		// 前面 getBean() 能通过缓存获得值，则跳过这个大else分支，直接到底部
 		else {
 			// Fail if we're already creating this bean instance:
-			// We're assumably within a circular reference.
+			// 默认第一次获取组件默认进入该else分支。We're assumably within a circular reference.
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
-			// Check if bean definition exists in this factory.
+			// 尝试从父工厂获取组件。Check if bean definition exists in this factory.
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
@@ -286,11 +288,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					return (T) parentBeanFactory.getBean(nameToLookup);
 				}
 			}
-
+			//typeCheckOnly是形参
 			if (!typeCheckOnly) {
 				markBeanAsCreated(beanName);
 			}
-
+			//事件，略
 			StartupStep beanCreation = this.applicationStartup.start("spring.beans.instantiate")
 					.tag("beanName", name);
 			try {
@@ -298,11 +300,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					beanCreation.tag("beanType", requiredType::toString);
 				}
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
-				checkMergedBeanDefinition(mbd, beanName, args);
+				checkMergedBeanDefinition(mbd, beanName, args);//检查是否是抽象
 
 				// Guarantee initialization of beans that the current bean depends on.
 				String[] dependsOn = mbd.getDependsOn();
-				if (dependsOn != null) {
+				if (dependsOn != null) { //看当前bean是否依赖其他bean如果依赖其他bean，则先获取该依赖
 					for (String dep : dependsOn) {
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
@@ -319,11 +321,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					}
 				}
 
-				// Create bean instance.
+				// Create bean instance. 创建 bean 单例实例
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
-							return createBean(beanName, mbd, args);
+							return createBean(beanName, mbd, args); //创建bean实例
 						}
 						catch (BeansException ex) {
 							// Explicitly remove instance from singleton cache: It might have been put there
@@ -386,7 +388,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 		}
 
-		return adaptBeanInstance(name, beanInstance, requiredType);
+		return adaptBeanInstance(name, beanInstance, requiredType); //把Object类型的bean对象装换成T类型（实际运行时的类型）
 	}
 
 	@SuppressWarnings("unchecked")
@@ -519,7 +521,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		String beanName = transformedBeanName(name);
 		boolean isFactoryDereference = BeanFactoryUtils.isFactoryDereference(name);
 
-		// Check manually registered singletons.
+		// 检查这个beanName的单例对象，如果已经创建过了则直接用该对象的Class，没有则可以最后一次决定这个组件的类型。Check manually registered singletons.
+		// 通过getSingleton()获取单例对象池(singletonObjects)的bean实例对象
 		Object beanInstance = getSingleton(beanName, false);
 		if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
 			if (beanInstance instanceof FactoryBean<?> factoryBean) {
@@ -532,7 +535,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 			else if (!isFactoryDereference) {
-				if (typeToMatch.isInstance(beanInstance)) {
+				if (typeToMatch.isInstance(beanInstance)) { //确定给定对象是否是此ResolvableType的实例
 					// Direct match for exposed instance?
 					return true;
 				}
@@ -601,8 +604,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 		}
-
-		// If we couldn't use the target type, try regular prediction.
+		// 调用MySmartInstantiationAwareBeanPostProcessor的predictBeanType()方法。
+		// 预测bean的类型，最后一次手动改变组件类型。If we couldn't use the target type, try regular prediction.
 		if (predictedType == null) {
 			predictedType = predictBeanType(beanName, mbd, typesToMatch);
 			if (predictedType == null) {
@@ -610,7 +613,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 		}
 
-		// Attempt to get the actual ResolvableType for the bean.
+		// 尝试获取 bean 的实际 ResolvableType。Attempt to get the actual ResolvableType for the bean.
 		ResolvableType beanType = null;
 
 		// If it's a FactoryBean, we want to look at what it creates, not the factory class.
@@ -650,7 +653,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			return typeToMatch.isAssignableFrom(beanType);
 		}
 
-		// If we don't have a bean type, fallback to the predicted type
+		// 如果我们没有 bean 类型，则回退到预测的类型。If we don't have a bean type, fallback to the predicted type
 		return typeToMatch.isAssignableFrom(predictedType);
 	}
 
@@ -1795,7 +1798,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			mbd.isFactoryBean = true;
 		}
 		else {
-			object = getCachedObjectForFactoryBean(beanName);
+			object = getCachedObjectForFactoryBean(beanName);//先从缓存中获取
 		}
 		if (object == null) {
 			// Return bean instance from factory.

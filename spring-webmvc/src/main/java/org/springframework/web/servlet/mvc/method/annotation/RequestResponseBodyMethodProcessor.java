@@ -179,6 +179,7 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 			throws IOException, HttpMediaTypeNotAcceptableException, HttpMessageNotWritableException {
 
 		mavContainer.setRequestHandled(true);
+		//InputMessage 和 OutputMessage
 		ServletServerHttpRequest inputMessage = createInputMessage(webRequest);
 		ServletServerHttpResponse outputMessage = createOutputMessage(webRequest);
 

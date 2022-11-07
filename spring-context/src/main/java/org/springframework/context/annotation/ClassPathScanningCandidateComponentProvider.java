@@ -418,7 +418,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
-			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
+			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);//拿到所有类
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
 			for (Resource resource : resources) {
@@ -430,9 +430,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				if (traceEnabled) {
 					logger.trace("Scanning " + resource);
 				}
-				try {
+				try { //生成每个资源的元数据信息
 					MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
-					if (isCandidateComponent(metadataReader)) {
+					if (isCandidateComponent(metadataReader)) { // 如果当前类在扫描范围，则拿出该类的bean定义信息封装成bean定义信息
 						ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 						sbd.setSource(resource);
 						if (isCandidateComponent(sbd)) {

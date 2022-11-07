@@ -25,7 +25,7 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.lang.Nullable;
 
-/**
+/**PropertyValues指的是一个属性的键值对，迭代器模式
  * Holder containing one or more {@link PropertyValue} objects,
  * typically comprising one update for a specific target bean.
  *

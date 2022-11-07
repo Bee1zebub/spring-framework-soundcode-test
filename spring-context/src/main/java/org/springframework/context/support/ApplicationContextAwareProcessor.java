@@ -82,10 +82,11 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 			return bean;
 		}
 
-		invokeAwareInterfaces(bean);
+		invokeAwareInterfaces(bean);  //执行Aware接口初始化底层元素
 		return bean;
 	}
 
+	//判断bean的类型，是否实现的XxxAware接口，回调setXxx()方法
 	private void invokeAwareInterfaces(Object bean) {
 		if (bean instanceof EnvironmentAware) {
 			((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());

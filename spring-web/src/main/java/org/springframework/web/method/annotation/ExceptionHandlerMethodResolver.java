@@ -72,7 +72,7 @@ public class ExceptionHandlerMethodResolver {
 	 * A constructor that finds {@link ExceptionHandler} methods in the given type.
 	 * @param handlerType the type to introspect
 	 */
-	public ExceptionHandlerMethodResolver(Class<?> handlerType) {
+	public ExceptionHandlerMethodResolver(Class<?> handlerType) {//扫描这个ControllerAdvice中标注了 @ExceptionHandler 的方法
 		for (Method method : MethodIntrospector.selectMethods(handlerType, EXCEPTION_HANDLER_METHODS)) {
 			for (Class<? extends Throwable> exceptionType : detectExceptionMappings(method)) {
 				addExceptionMapping(exceptionType, method);

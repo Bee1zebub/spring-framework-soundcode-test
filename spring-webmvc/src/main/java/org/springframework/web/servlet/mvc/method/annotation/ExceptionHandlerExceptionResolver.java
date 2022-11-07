@@ -281,13 +281,14 @@ public class ExceptionHandlerExceptionResolver extends AbstractHandlerMethodExce
 		if (getApplicationContext() == null) {
 			return;
 		}
-
+		// 找到所有的 ControllerAdviceBean ,标注了 @ControllerAdvice 注解的类
 		List<ControllerAdviceBean> adviceBeans = ControllerAdviceBean.findAnnotatedBeans(getApplicationContext());
 		for (ControllerAdviceBean adviceBean : adviceBeans) {
 			Class<?> beanType = adviceBean.getBeanType();
 			if (beanType == null) {
 				throw new IllegalStateException("Unresolvable type for ControllerAdviceBean: " + adviceBean);
 			}
+			//扫描这个ControllerAdvice中标注了 @ExceptionHandler 的方法，并且缓存什么方法处理什么异常的映射（mappedMethods属性）
 			ExceptionHandlerMethodResolver resolver = new ExceptionHandlerMethodResolver(beanType);
 			if (resolver.hasExceptionMappings()) {
 				this.exceptionHandlerAdviceCache.put(adviceBean, resolver);
@@ -394,7 +395,7 @@ public class ExceptionHandlerExceptionResolver extends AbstractHandlerMethodExce
 	@Nullable
 	protected ModelAndView doResolveHandlerMethodException(HttpServletRequest request,
 			HttpServletResponse response, @Nullable HandlerMethod handlerMethod, Exception exception) {
-
+		//为当前异常找一个处理方法？？？ @ExceptionHandler注解标注的方法
 		ServletInvocableHandlerMethod exceptionHandlerMethod = getExceptionHandlerMethod(handlerMethod, exception);
 		if (exceptionHandlerMethod == null) {
 			return null;

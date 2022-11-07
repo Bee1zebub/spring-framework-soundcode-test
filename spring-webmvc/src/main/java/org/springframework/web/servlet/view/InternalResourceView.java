@@ -134,11 +134,11 @@ public class InternalResourceView extends AbstractUrlBasedView {
 	 * Render the internal resource given the specified model.
 	 * This includes setting the model as request attributes.
 	 */
-	@Override
+	@Override//真正的渲染逻辑
 	protected void renderMergedOutputModel(
 			Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-		// Expose the model object as request attributes.
+		// 将model对象保存的值放进request请求域中。Expose the model object as request attributes.
 		exposeModelAsRequestAttributes(model, request);
 
 		// Expose helpers as request attributes, if any.
@@ -147,7 +147,7 @@ public class InternalResourceView extends AbstractUrlBasedView {
 		// Determine the path for the request dispatcher.
 		String dispatcherPath = prepareForRendering(request, response);
 
-		// Obtain a RequestDispatcher for the target resource (typically a JSP).
+		// 拿到请求转发器。Obtain a RequestDispatcher for the target resource (typically a JSP).
 		RequestDispatcher rd = getRequestDispatcher(request, dispatcherPath);
 		if (rd == null) {
 			throw new ServletException("Could not get RequestDispatcher for [" + getUrl() +
@@ -167,7 +167,7 @@ public class InternalResourceView extends AbstractUrlBasedView {
 			// Note: The forwarded resource is supposed to determine the content type itself.
 			if (logger.isDebugEnabled()) {
 				logger.debug("Forwarding to [" + getUrl() + "]");
-			}
+			}//使用 RequestDispatcher .forward()方法转发
 			rd.forward(request, response);
 		}
 	}
@@ -200,12 +200,12 @@ public class InternalResourceView extends AbstractUrlBasedView {
 	 */
 	protected String prepareForRendering(HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
-
+		//返回值地址
 		String path = getUrl();
 		Assert.state(path != null, "'url' not set");
 
 		if (this.preventDispatchLoop) {
-			String uri = request.getRequestURI();
+			String uri = request.getRequestURI();//请求的URI地址（全）
 			if (path.startsWith("/") ? uri.equals(path) : uri.equals(StringUtils.applyRelativePath(uri, path))) {
 				throw new ServletException("Circular view path [" + path + "]: would dispatch back " +
 						"to the current handler URL [" + uri + "] again. Check your ViewResolver setup! " +

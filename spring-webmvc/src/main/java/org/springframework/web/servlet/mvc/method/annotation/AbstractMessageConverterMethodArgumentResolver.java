@@ -225,7 +225,7 @@ public abstract class AbstractMessageConverterMethodArgumentResolver implements 
 	 * @return the input message
 	 */
 	protected ServletServerHttpRequest createInputMessage(NativeWebRequest webRequest) {
-		HttpServletRequest servletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
+		HttpServletRequest servletRequest = webRequest.getNativeRequest(HttpServletRequest.class);//拿到原生request
 		Assert.state(servletRequest != null, "No HttpServletRequest");
 		return new ServletServerHttpRequest(servletRequest);
 	}

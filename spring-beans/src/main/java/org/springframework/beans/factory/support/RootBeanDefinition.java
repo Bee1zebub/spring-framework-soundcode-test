@@ -138,6 +138,7 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	 * @see #setConstructorArgumentValues
 	 * @see #setPropertyValues
 	 */
+	//为RootDefinition构造器打断点，分析Spring在哪些环节想给容器中注册哪些定义信息
 	public RootBeanDefinition() {
 	}
 

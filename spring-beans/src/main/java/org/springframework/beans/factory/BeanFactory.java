@@ -29,10 +29,13 @@ import org.springframework.lang.Nullable;
  * are available for specific purposes.
  *
  * <p>This interface is implemented by objects that hold a number of bean definitions,
- * each uniquely identified by a String name. Depending on the bean definition,
+ * each uniquely identified by a String name.
+ * 此接口由包含许多 bean 定义的对象实现，每个定义由一个字符串名称唯一标识。
+ *
+ * Depending on the bean definition,
  * the factory will return either an independent instance of a contained object
- * (the Prototype design pattern), or a single shared instance (a superior
- * alternative to the Singleton design pattern, in which the instance is a
+ * (the Prototype design pattern【原型模式】), or a single shared instance (a superior
+ * alternative to the Singleton design pattern【单例模式】, in which the instance is a
  * singleton in the scope of the factory). Which type of instance will be returned
  * depends on the bean factory configuration: the API is the same. Since Spring
  * 2.0, further scopes are available depending on the concrete application

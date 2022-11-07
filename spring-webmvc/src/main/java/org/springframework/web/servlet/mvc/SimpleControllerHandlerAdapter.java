@@ -38,7 +38,7 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class SimpleControllerHandlerAdapter implements HandlerAdapter {
 
-	@Override
+	@Override//判断是否实现Controller接口
 	public boolean supports(Object handler) {
 		return (handler instanceof Controller);
 	}

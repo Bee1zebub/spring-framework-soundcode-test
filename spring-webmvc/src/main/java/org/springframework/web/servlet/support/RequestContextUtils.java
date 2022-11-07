@@ -267,7 +267,7 @@ public abstract class RequestContextUtils {
 	 * @since 5.0
 	 */
 	public static void saveOutputFlashMap(String location, HttpServletRequest request, HttpServletResponse response) {
-		FlashMap flashMap = getOutputFlashMap(request);
+		FlashMap flashMap = getOutputFlashMap(request);//从请求域中拿到数据
 		if (CollectionUtils.isEmpty(flashMap)) {
 			return;
 		}
@@ -275,9 +275,10 @@ public abstract class RequestContextUtils {
 		UriComponents uriComponents = UriComponentsBuilder.fromUriString(location).build();
 		flashMap.setTargetRequestPath(uriComponents.getPath());
 		flashMap.addTargetRequestParams(uriComponents.getQueryParams());
-
+		//从请求域中拿到数据
 		FlashMapManager manager = getFlashMapManager(request);
 		Assert.state(manager != null, "No FlashMapManager. Is this a DispatcherServlet handled request?");
+		//将数据保存到session域中
 		manager.saveOutputFlashMap(flashMap, request, response);
 	}
 

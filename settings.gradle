@@ -58,3 +58,7 @@ settings.gradle.projectsLoaded {
 		}
 	}
 }
+include 'spring-soundcode'
+include 'springmvc-source-test'
+include 'test2'
+

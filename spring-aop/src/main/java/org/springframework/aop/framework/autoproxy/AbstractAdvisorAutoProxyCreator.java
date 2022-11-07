@@ -77,7 +77,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
-			return DO_NOT_PROXY;
+			return DO_NOT_PROXY; //advice
 		}
 		return advisors.toArray();
 	}

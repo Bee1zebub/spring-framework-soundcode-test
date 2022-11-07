@@ -33,7 +33,7 @@ import org.springframework.util.ObjectUtils;
  * or {@code Charset} to be used for reading from the resource.
  *
  * <p>Used as an argument for operations that support reading content with
- * a specific encoding, typically via a {@code java.io.Reader}.
+ * a specific encoding, typically via a {@code java.io.Reader}. 适配器模式
  *
  * @author Juergen Hoeller
  * @author Sam Brannen

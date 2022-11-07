@@ -274,15 +274,17 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
-			if (this.advisedBeans.containsKey(cacheKey)) {
+			if (this.advisedBeans.containsKey(cacheKey)) {//缓存已经分析过的组件
 				return null;
-			}
+			}// 判断该组件是否是切面或者是否需要跳过
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
 			}
 		}
-
+		// 如果我们有自定义 TargetSource，请在此处创建代理。
+		// 抑制目标 bean 的不必要的默认实例化：
+		// TargetSource 将以自定义方式处理目标实例。
 		// Create proxy here if we have a custom TargetSource.
 		// Suppresses unnecessary default instantiation of the target bean:
 		// The TargetSource will handle target instances in a custom fashion.
@@ -361,12 +363,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
-
+		// 如果我们有增强方法（有切面切入他），则创建代理对象。
 		// Create proxy if we have advice.
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
-			Object proxy = createProxy(
+			Object proxy = createProxy( //如果有增强器则为他创建代理对象
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;

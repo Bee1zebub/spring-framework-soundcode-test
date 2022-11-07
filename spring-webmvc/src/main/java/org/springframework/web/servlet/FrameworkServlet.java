@@ -527,8 +527,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
-			this.webApplicationContext = initWebApplicationContext();
-			initFrameworkServlet();
+			this.webApplicationContext = initWebApplicationContext(); //初始化ioc容器
+			initFrameworkServlet(); // 又为子类 DispatcherServlet 预留模板方法
 		}
 		catch (ServletException | RuntimeException ex) {
 			logger.error("Context initialization failed", ex);
@@ -559,7 +559,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
 		WebApplicationContext rootContext =
-				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+				WebApplicationContextUtils.getWebApplicationContext(getServletContext());//获取之前的 WebApplicationContext,父容器
 		WebApplicationContext wac = null;
 
 		if (this.webApplicationContext != null) {
@@ -571,9 +571,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 				if (cwac.getParent() == null) {
 					// The context instance was injected without an explicit parent -> set
 					// the root application context (if any; may be null) as the parent
-					cwac.setParent(rootContext);
+					cwac.setParent(rootContext);//保存web容器的父容器
 				}
-				configureAndRefreshWebApplicationContext(cwac);
+				configureAndRefreshWebApplicationContext(cwac);//配置并且刷新web容器
 			}
 		}
 		if (wac == null) {
@@ -696,7 +696,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
-		wac.refresh();
+		wac.refresh();//刷新容器内部工厂
 	}
 
 	/**
@@ -836,7 +836,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		this.refreshEventReceived = true;
 		synchronized (this.onRefreshMonitor) {
-			onRefresh(event.getApplicationContext());
+			onRefresh(event.getApplicationContext());//留给子类的模板方法
 		}
 	}
 
@@ -866,7 +866,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 
 	/**
-	 * Override the parent class implementation in order to intercept PATCH requests.
+	 * Override the parent class implementation in order to intercept PATCH requests. coyote
 	 */
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response)
@@ -1000,7 +1000,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
-			doService(request, response);
+			doService(request, response); //调用 DispatcherServlet 的 doService() 方法
 		}
 		catch (ServletException | IOException ex) {
 			failureCause = ex;

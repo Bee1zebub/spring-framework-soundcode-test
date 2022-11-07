@@ -361,7 +361,7 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 
 		if (this.interceptors == null) {
 			InterceptorRegistry registry = new InterceptorRegistry();
-			addInterceptors(registry);
+			addInterceptors(registry); //留给子类的模板方法
 			registry.addInterceptor(new ConversionServiceExposingInterceptor(mvcConversionService));
 			registry.addInterceptor(new ResourceUrlProviderExposingInterceptor(mvcResourceUrlProvider));
 			this.interceptors = registry.getInterceptors();
@@ -1100,13 +1100,13 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 	 * to allow other potential {@link ViewResolver} beans to resolve views.
 	 * @since 4.1
 	 */
-	@Bean
+	@Bean//为容器中放置视图解析器
 	public ViewResolver mvcViewResolver(
 			@Qualifier("mvcContentNegotiationManager") ContentNegotiationManager contentNegotiationManager) {
 		ViewResolverRegistry registry =
 				new ViewResolverRegistry(contentNegotiationManager, this.applicationContext);
-		configureViewResolvers(registry);
-
+		configureViewResolvers(registry); //扩展配置视图解析器
+		//上一步扩展可能不为空
 		if (registry.getViewResolvers().isEmpty() && this.applicationContext != null) {
 			String[] names = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 					this.applicationContext, ViewResolver.class, true, false);

@@ -674,14 +674,14 @@ class CglibAopProxy implements AopProxy, Serializable {
 		}
 
 		@Override
-		@Nullable
+		@Nullable//回调方法
 		public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
 			Object oldProxy = null;
 			boolean setProxyContext = false;
 			Object target = null;
 			TargetSource targetSource = this.advised.getTargetSource();
-			try {
-				if (this.advised.exposeProxy) {
+			try {//exposeProxy：使用了代理对象就有了增强功能（与异步线程有关）
+				if (this.advised.exposeProxy) {//允许使用ThreadLocal线程共享这个代理对象
 					// Make invocation available if necessary.
 					oldProxy = AopContext.setCurrentProxy(proxy);
 					setProxyContext = true;
@@ -689,7 +689,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 				// Get as late as possible to minimize the time we "own" the target, in case it comes from a pool...
 				target = targetSource.getTarget();
 				Class<?> targetClass = (target != null ? target.getClass() : null);
-				List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+				List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);//aop后置处理器在第一次的时候生成好的增强器，然后装换成的拦截器
 				Object retVal;
 				// Check whether we only have one InvokerInterceptor: that is,
 				// no real advice, but just reflective invocation of the target.
@@ -702,7 +702,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 					retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
 				}
 				else {
-					// We need to create a method invocation...
+					// ！！！我们需要创建一个方法执行...把所有的信息封装到这里。整个拦截器链再次执行。（责任链模式）We need to create a method invocation...
 					retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy).proceed();
 				}
 				retVal = processReturnType(proxy, target, method, retVal);
@@ -752,7 +752,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 		@Nullable
 		public Object proceed() throws Throwable {
 			try {
-				return super.proceed();
+				return super.proceed(); //调用父类方法
 			}
 			catch (RuntimeException ex) {
 				throw ex;

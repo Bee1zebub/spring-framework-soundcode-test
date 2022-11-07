@@ -387,6 +387,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
+			//13.使用dom解析工具把xml变成Document
 			Document doc = doLoadDocument(inputSource, resource);
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
@@ -506,7 +507,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
-		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();//使用BeanDefinitionDocumentReader解析XmlBeanDefinitionReader解析得到的Document文件
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		return getRegistry().getBeanDefinitionCount() - countBefore;

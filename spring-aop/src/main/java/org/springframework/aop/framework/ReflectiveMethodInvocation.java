@@ -89,7 +89,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	 * Index from 0 of the current interceptor we're invoking.
 	 * -1 until we invoke: then the current interceptor.
 	 */
-	private int currentInterceptorIndex = -1;
+	private int currentInterceptorIndex = -1;//当前拦截器的索引
 
 
 	/**
@@ -158,9 +158,9 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	@Override
 	@Nullable
 	public Object proceed() throws Throwable {
-		// We start with an index of -1 and increment early.
+		// currentInterceptorIndex属性；interceptorsAndDynamicMethodMatchers：父类属性：当前拦截器的索引有没有超过 拦截器总数量-1。We start with an index of -1 and increment early.
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
-			return invokeJoinpoint();
+			return invokeJoinpoint();//当前索引等于拦截器数量-1；执行连接点，真正执行目标方法HelloService.sayHello()
 		}
 
 		Object interceptorOrInterceptionAdvice =
@@ -180,7 +180,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		}
 		else {
 			// It's an interceptor, so we just invoke it: The pointcut will have
-			// been evaluated statically before this object was constructed.
+			// 传入的this为前面传入的什么都有的mi。been evaluated statically before this object was constructed.
 			return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 		}
 	}

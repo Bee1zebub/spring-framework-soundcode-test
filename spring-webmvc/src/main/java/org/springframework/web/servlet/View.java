@@ -93,7 +93,7 @@ public interface View {
 	 * @param request current HTTP request
 	 * @param response he HTTP response we are building
 	 * @throws Exception if rendering failed
-	 */
+	 *///request、response、model（数据：如100个用户）out.write()....
 	void render(@Nullable Map<String, ?> model, HttpServletRequest request, HttpServletResponse response)
 			throws Exception;
 

@@ -128,8 +128,8 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	 */
 	@Nullable
 	private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parameter) {
-		HandlerMethodArgumentResolver result = this.argumentResolverCache.get(parameter);
-		if (result == null) {
+		HandlerMethodArgumentResolver result = this.argumentResolverCache.get(parameter);//先看缓存中有没有，第一次没有
+		if (result == null) { // ！ 遍历 参数解析器，判断参数解析器是否能解析该参数，能处理则将则保存参数和处理器的映射
 			for (HandlerMethodArgumentResolver resolver : this.argumentResolvers) {
 				if (resolver.supportsParameter(parameter)) {
 					result = resolver;

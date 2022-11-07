@@ -121,6 +121,7 @@ public class EventListenerMethodProcessor
 	public void afterSingletonsInstantiated() {
 		ConfigurableListableBeanFactory beanFactory = this.beanFactory;
 		Assert.state(this.beanFactory != null, "No ConfigurableListableBeanFactory set");
+		//拿到容器中所有的组件名称遍历执行
 		String[] beanNames = beanFactory.getBeanNamesForType(Object.class);
 		for (String beanName : beanNames) {
 			if (!ScopedProxyUtils.isScopedTarget(beanName)) {
@@ -151,6 +152,7 @@ public class EventListenerMethodProcessor
 						}
 					}
 					try {
+						//处理这个组件，与事务相关
 						processBean(beanName, type);
 					}
 					catch (Throwable ex) {
@@ -169,6 +171,7 @@ public class EventListenerMethodProcessor
 
 			Map<Method, EventListener> annotatedMethods = null;
 			try {
+				//找到组件中所有标注 @EventListener 注解的方法
 				annotatedMethods = MethodIntrospector.selectMethods(targetType,
 						(MethodIntrospector.MetadataLookup<EventListener>) method ->
 								AnnotatedElementUtils.findMergedAnnotation(method, EventListener.class));
@@ -192,15 +195,18 @@ public class EventListenerMethodProcessor
 				Assert.state(context != null, "No ApplicationContext set");
 				List<EventListenerFactory> factories = this.eventListenerFactories;
 				Assert.state(factories != null, "EventListenerFactory List not initialized");
+				//遍历每一个标注 @EventListener 注解的方法
 				for (Method method : annotatedMethods.keySet()) {
 					for (EventListenerFactory factory : factories) {
-						if (factory.supportsMethod(method)) {
+						if (factory.supportsMethod(method)) { //拿到DefaultEventListenerFactory，默认全部支持
 							Method methodToUse = AopUtils.selectInvocableMethod(method, context.getType(beanName));
+							//利用拿到DefaultEventListenerFactory创建 ApplicationListenerMethodAdapter 监听器
 							ApplicationListener<?> applicationListener =
 									factory.createApplicationListener(beanName, targetType, methodToUse);
 							if (applicationListener instanceof ApplicationListenerMethodAdapter) {
 								((ApplicationListenerMethodAdapter) applicationListener).init(context, this.evaluator);
 							}
+							//把这个适配器放到了容器中和事件多播器中，事件派发给适配器
 							context.addApplicationListener(applicationListener);
 							break;
 						}
