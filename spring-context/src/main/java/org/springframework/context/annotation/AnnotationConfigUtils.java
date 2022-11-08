@@ -174,7 +174,7 @@ public abstract class AnnotationConfigUtils {
 		}
 
 		// Check for Jakarta Annotations support, and if present add the CommonAnnotationBeanPostProcessor.
-		// 注册支持Jakarta Annotations 的处理器，解析注解@Resource
+		// 注册支持Jakarta Annotations 的处理器,解析jakarta.annotation.PostConstruct，没有导入相关依赖则跳过
 		if (jakartaAnnotationsPresent && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
 			def.setSource(source);
@@ -183,7 +183,7 @@ public abstract class AnnotationConfigUtils {
 
 		// Check for JSR-250 support, and if present add an InitDestroyAnnotationBeanPostProcessor
 		// for the javax variant of PostConstruct/PreDestroy.
-		// 注册支持JSR250规范的处理器,解析@PreConstruct和@PreDestroy注解
+		// 注册支持JSR250规范的处理器,解析@PreConstruct和@PreDestroy注解，没有导入相关依赖则跳过
 		if (jsr250Present && !registry.containsBeanDefinition(JSR250_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			try {
 				RootBeanDefinition def = new RootBeanDefinition(InitDestroyAnnotationBeanPostProcessor.class);
@@ -197,7 +197,7 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
-		// Check for JPA（操作数据库） support, and if present add the PersistenceAnnotationBeanPostProcessor.
+		// Check for JPA（操作数据库），没有导入相关依赖则跳过 support, and if present add the PersistenceAnnotationBeanPostProcessor.
 		if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
 			try {

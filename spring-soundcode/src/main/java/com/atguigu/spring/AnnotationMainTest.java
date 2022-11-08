@@ -3,6 +3,7 @@ package com.atguigu.spring;
 import com.atguigu.spring.aop.HelloService;
 import com.atguigu.spring.bean.Cat;
 import com.atguigu.spring.bean.Hello;
+import com.atguigu.spring.bean.Person;
 import com.atguigu.spring.bean.Teacher;
 import com.atguigu.spring.circle.A;
 import com.atguigu.spring.config.AopOpenConfig;
@@ -19,9 +20,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class AnnotationMainTest {
 
 	public static void main(String[] args) {
-//		ApplicationContext context = new AnnotationConfigApplicationContext(MainConfig.class);
-//		Person person = context.getBean(Person.class);
-//		System.out.println(person);
+		ApplicationContext context = new AnnotationConfigApplicationContext(MainConfig.class);
+		Person person = context.getBean(Person.class);
+		System.out.println(person);
 
 //		String[] definitionNames = context.getBeanDefinitionNames();
 //		for(String name:definitionNames){
@@ -51,18 +52,18 @@ public class AnnotationMainTest {
 //		System.out.println(hello);
 //		applicationContext.close();
 
-		//AOP,原理测试
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(AopOpenConfig.class );
-		HelloService helloService = applicationContext.getBean(HelloService.class);
-		//使用切入点方法
-		helloService.sayHello("zhangSan");
-
-
-		//测试事件
-		AppEventPublisher eventPublisher = applicationContext.getBean(AppEventPublisher.class);
-		eventPublisher.publish(new A());
-		eventPublisher.publish(new MessageEvent("hello，你好"));
-		eventPublisher.publish(new ChangeEvent(eventPublisher,"sending..."));
+//		//AOP,原理测试
+//		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(AopOpenConfig.class );
+//		HelloService helloService = applicationContext.getBean(HelloService.class);
+//		//使用切入点方法
+//		helloService.sayHello("zhangSan");
+//
+//
+//		//测试事件
+//		AppEventPublisher eventPublisher = applicationContext.getBean(AppEventPublisher.class);
+//		eventPublisher.publish(new A());
+//		eventPublisher.publish(new MessageEvent("hello，你好"));
+//		eventPublisher.publish(new ChangeEvent(eventPublisher,"sending..."));
 
 
 //		Person bean = applicationContext.getBean(Person.class);
